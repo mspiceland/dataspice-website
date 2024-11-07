@@ -40,6 +40,17 @@
             margin-top: 0.5em;
             margin-bottom: 0.5em;
         }
+        .aspect-w-16 {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        }
+        .aspect-w-16 iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -75,6 +86,16 @@
                     </p>
 
                     <h2>The Power of Real-Time AI Voice Interaction</h2>
+                    <div class="aspect-w-16 aspect-h-9 mb-8">
+                        <iframe 
+                            class="w-full h-[500px] rounded-lg"
+                            src="https://www.youtube.com/embed/jzyYR6aeiKE"
+                            title="AI Phone Agent Demo"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
                     <p>
                         Using OpenAI's new Real-Time API and Twilio's telephony infrastructure, we've developed a custom AI Phone Agent that showcases the incredible possibilities of this technology. While we chose Twilio for rapid development and deployment, the system can be integrated with any cloud-based phone system using SIP protocols. The agent demonstrates natural, flowing conversation with minimal latency, making interactions feel remarkably human-like.
                     </p>
