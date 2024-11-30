@@ -24,23 +24,17 @@ const ContactForm = () => {
         // If no URL is provided, it's valid (since it's optional)
         if (!url) return true;
         
-        // If it already starts with http:// or https://, validate the full URL
-        if (url.match(/^https?:\/\//)) {
-            try {
-                new URL(url);
-                return true;
-            } catch {
-                return false;
-            }
-        }
+        // Remove http:// or https:// if present
+        const domainToTest = url.replace(/^https?:\/\//, '');
         
-        // For URLs without protocol, try validating with https:// prepended
-        try {
-            new URL(`https://${url}`);
-            return true;
-        } catch {
-            return false;
-        }
+        // Basic domain validation: 
+        // - Must have at least one dot
+        // - Must have something before and after the dot
+        // - Can't start or end with a dot or hyphen
+        // - Can't have consecutive dots
+        const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/;
+        
+        return domainRegex.test(domainToTest);
     };
 
     const formatPhone = (phone) => {
@@ -94,7 +88,7 @@ const ContactForm = () => {
         }
 
         if (formData.website && !validateURL(formData.website)) {
-            newErrors.website = 'Please enter a valid website URL';
+            newErrors.website = 'Please enter a valid website URL (e.g., example.com)';
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -126,10 +120,28 @@ const ContactForm = () => {
                 setSubmitStatus('success');
                 setFormData({ name: '', phone: '', email: '', website: '' });
             } else {
-                throw new Error('Submission failed');
+                // Handle specific HTTP status codes
+                switch (response.status) {
+                    case 404:
+                        throw new Error('The webhook endpoint could not be found. The scenario might be deactivated.');
+                    case 429:
+                        throw new Error('Too many requests. Please try again later.');
+                    case 500:
+                    case 502:
+                    case 503:
+                    case 504:
+                        throw new Error('There was a server error. Please try again later.');
+                    default:
+                        throw new Error(`Submission failed with status: ${response.status}`);
+                }
             }
         } catch (error) {
+            console.error('Form submission error:', error);
             setSubmitStatus('error');
+            setErrors(prev => ({
+                ...prev,
+                submit: error.message || 'There was a problem sending your message. Please try again.'
+            }));
         } finally {
             setIsSubmitting(false);
         }
@@ -146,11 +158,11 @@ const ContactForm = () => {
     }
 
     return React.createElement('div', { className: 'max-w-lg mx-auto' },
-        submitStatus === 'error' && React.createElement('div', {
+        (submitStatus === 'error' && errors.submit) && React.createElement('div', {
             className: 'mb-6 p-4 bg-red-50 border border-red-200 rounded-lg'
         },
             React.createElement('p', { className: 'text-red-800' },
-                'There was a problem sending your message. Please try again.'
+                errors.submit
             )
         ),
 
@@ -228,7 +240,7 @@ const ContactForm = () => {
                     className: 'block text-sm font-medium text-gray-700 mb-1'
                 }, 'Website URL'),
                 React.createElement('input', {
-                    type: 'url',
+                    type: 'text',
                     id: 'website',
                     name: 'website',
                     value: formData.website,
