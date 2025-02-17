@@ -108,13 +108,20 @@ const ContactForm = () => {
         };
 
         try {
-            const response = await fetch('https://hook.us2.make.com/qw3auswq9jn14u3woe8mmtl6zf1w42o7', {
+            console.log('Submitting form data:', submitData);
+            
+            const response = await fetch('https://dataspice.app.n8n.cloud/webhook/7a2886ea-dce9-4daf-9143-ced9d2136c37', {
                 method: 'POST',
+                mode: 'cors',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(submitData)
             });
+
+            console.log('Response status:', response.status);
+            const responseData = await response.text();
+            console.log('Response data:', responseData);
 
             if (response.ok) {
                 setSubmitStatus('success');
@@ -140,7 +147,7 @@ const ContactForm = () => {
             setSubmitStatus('error');
             setErrors(prev => ({
                 ...prev,
-                submit: error.message || 'There was a problem sending your message. Please try again.'
+                submit: 'There was a problem sending your message. Our team has been notified. Please try again later or email us directly.'
             }));
         } finally {
             setIsSubmitting(false);
